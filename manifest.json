@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "Synology File Station 预览（空格/ESC + 视频/音频/图片）",
+  "version": "1.2.0",
+  "description": "在群晖 File Station 中：选中文件按空格浮层预览（视频/音频/图片），ESC 关闭；可按域名(含端口)开关生效。",
+
+  "icons": {
+    "16": "icons/icon.png",
+    "19": "icons/icon-19.png",
+    "64": "icons/icon-64.png",
+    "128": "icons/icon-128.png"
+  },
+
+  "permissions": ["storage"],
+  "host_permissions": ["https://*/*", "http://*/*"],
+
+  "content_scripts": [{
+    "matches": ["https://*/*", "http://*/*"],
+    "css": ["lib/plyr.css", "lib/fs-preview.css"],
+    "js": [
+      "lib/plyr.polyfilled.min.js",
+      "lib/heic2any.min.js",
+      "lib/hls.min.js",
+      "content.js"
+    ],
+    "run_at": "document_start"
+  }],
+
+  "web_accessible_resources": [{
+    "resources": ["page-hook.js"],
+    "matches": ["<all_urls>"]
+  }],
+
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  }
+}

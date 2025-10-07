@@ -1,0 +1,25 @@
+# macOS
+.DS_Store
+
+# Node/前端
+node_modules/
+dist/
+build/
+coverage/
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# IDE
+.vscode/
+.idea/
+
+# 环境/密钥（根据项目实际调整）
+.env
+*.pem
+*.key
+*.crt
+
+# 临时
+*.tmp
+*.swp

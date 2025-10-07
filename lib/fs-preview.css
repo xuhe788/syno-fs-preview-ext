@@ -1,0 +1,261 @@
+#fs_inline_media_mask.fs-inline-mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.72);
+  z-index: 2147483646;
+  outline: none;
+}
+
+#fs_inline_media_mask.fs-inline-mask:focus {
+  outline: none;
+}
+
+.fs-inline-wrap {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: #000;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fs-inline-loading { pointer-events: none; }
+
+.fs-inline-wrap--video {
+  width: 90vw;
+  max-width: 1280px;
+  height: 90vh;
+  max-height: 720px;
+}
+
+.fs-inline-wrap--image {
+  width: 92vw;
+  max-width: 1600px;
+  height: 92vh;
+  max-height: 900px;
+}
+
+.fs-inline-wrap--audio {
+  width: 92vw;
+  max-width: 520px;
+  height: auto;
+  padding: 24px 28px;
+  background: #111;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 18px;
+}
+
+.fs-inline-wrap--message {
+  width: 70vw;
+  max-width: 420px;
+  min-width: 240px;
+  min-height: 120px;
+  padding: 24px 28px;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fs-inline-close {
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  border: none;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+  font-size: 16px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  z-index: 2147483648;
+}
+
+.fs-inline-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.fs-inline-video-holder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  background: #000;
+}
+
+.fs-inline-video-player {
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+  object-fit: contain;
+  background: #000;
+  display: block;
+}
+
+.fs-inline-loading {
+  backdrop-filter: blur(2px);
+}
+
+.fs-inline-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: fsInlineSpin 1s linear infinite;
+}
+
+.fs-inline-loading-text {
+  margin-top: 12px;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+
+@keyframes fsInlineSpin {
+  to { transform: rotate(360deg); }
+}
+
+.fs-inline-message {
+  color: #fff;
+  text-align: center;
+  font-size: 15px;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+/* 让 Plyr 容器与视频区域填满浮层宽高，控制栏随浮层宽度走 */
+/* 让 Plyr 容器占满浮层宽度，控制栏随容器宽度 */
+.fs-inline-video-holder .plyr {
+  width: 100% !important;
+}
+
+/* 保持默认等比策略，由 Plyr 自身管理高度/比例 */
+
+.fs-inline-audio-player {
+  width: 100%;
+  height: auto;
+  background: transparent;
+}
+
+.fs-inline-image {
+  margin: auto;
+  max-width: 100%;
+  max-height: 100%;
+  user-select: none;
+  cursor: grab;
+  transform-origin: center center;
+  display: block;
+}
+
+@keyframes fsAudioSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.fs-audio-layout {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.fs-audio-meta {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  color: #fff;
+}
+
+.fs-audio-record {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  position: relative;
+  background: radial-gradient(circle at 30% 30%, #4b5563 0%, #1f2937 45%, #0f172a 70%, #000 100%);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  animation: fsAudioSpin 12s linear infinite;
+}
+
+.fs-audio-record.with-cover {
+  background: radial-gradient(circle at 35% 35%, #1f2933 0%, #0f172a 55%, #000 100%);
+}
+
+.fs-audio-record.is-paused {
+  animation-play-state: paused;
+}
+
+.fs-audio-record img {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 64%;
+  height: 64%;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.5);
+  display: none;
+}
+
+.fs-audio-record.with-cover img {
+  display: block;
+}
+
+.fs-audio-spindle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #d1d5db;
+  box-shadow: inset 0 0 0 4px rgba(0, 0, 0, 0.4);
+}
+
+.fs-audio-meta-text {
+  text-align: center;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fs-audio-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.fs-audio-sub {
+  font-size: 13px;
+  opacity: 0.78;
+}
+
+.fs-audio-player-holder {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.fs-audio-player-holder audio {
+  width: 100%;
+}

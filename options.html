@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>域名/端口管控</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; margin:20px;}
+    h1{font-size:18px;margin:0 0 12px;}
+    .row{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;}
+    input[type=text]{padding:6px 8px;min-width:260px;}
+    button{padding:6px 12px;border:1px solid #ccc;border-radius:6px;background:#f6f7f9;cursor:pointer}
+    button.primary{background:#2d7dfb;color:#fff;border-color:#2d7dfb}
+    table{border-collapse:collapse;width:100%;margin-top:10px;}
+    th,td{border-bottom:1px solid #eee;padding:8px 6px;text-align:left;}
+    th{color:#555;font-weight:600}
+    .muted{color:#888;font-size:12px}
+    .pill{display:inline-block;background:#eef4ff;color:#2d7dfb;border-radius:999px;padding:2px 8px;font-size:12px}
+  </style>
+</head>
+<body>
+  <h1>域名列表（支持 host:port）</h1>
+  <div class="row">
+    <input id="hostport" type="text" placeholder="例如：nxuhe.com:7071 或 10.0.0.2:5001">
+    <label><input id="enabled" type="checkbox" checked> 生效</label>
+    <button id="add" class="primary">添加/更新</button>
+    <button id="add-current">添加当前站点</button>
+  </div>
+  <div class="muted">说明：仅当当前页面的 <span class="pill">host:port</span> 在列表中且“生效”为开启时，扩展才会注入预览功能。</div>
+  <table>
+    <thead>
+      <tr><th>host:port</th><th>状态</th><th>操作</th></tr>
+    </thead>
+    <tbody id="list"></tbody>
+  </table>
+
+  <script src="options.js"></script>
+</body>
+</html>
