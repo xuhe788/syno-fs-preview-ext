@@ -7,7 +7,7 @@
   'use strict';
 
   /** ======================== 域名启用控制（storage.local） ======================== **/
-  const KEY = 'sites';  // [{ host: 'nxuhe.com', port?: '7071', enabled: true }]
+  const KEY = 'sites';  // [{ host: 'example.com', port?: '5001', enabled: true }]
   const loadSites = () => new Promise(r => chrome.storage.local.get(KEY, o => r(Array.isArray(o?.[KEY]) ? o[KEY] : [])));
   function isEnabledForHere(sites) {
     const hereHost = location.hostname;
