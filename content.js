@@ -7,7 +7,7 @@
   'use strict';
 
   /** ======================== 域名启用控制（storage.local） ======================== **/
-  const KEY = 'sites';  // [{ host: 'nxuhe.com', port?: '7071', enabled: true }]
+  const KEY = 'sites';  // [{ host: 'example.com', port?: '5001', enabled: true }]
   const loadSites = () => new Promise(r => chrome.storage.local.get(KEY, o => r(Array.isArray(o?.[KEY]) ? o[KEY] : [])));
   function isEnabledForHere(sites) {
     const hereHost = location.hostname;
@@ -455,6 +455,20 @@
     installGlobalKeyHandlers({ kind: 'image' });
   }
 
+  // 在浮层左上角显示文件名（图片/视频）
+  function addFilenameBadge(url) {
+    if (!S.wrapEl || !url) return;
+    try {
+      const name = deriveNameFromUrl(url);
+      if (!name) return;
+      const tag = document.createElement('div');
+      tag.className = 'fs-inline-filename';
+      tag.title = name;
+      tag.textContent = name;
+      S.wrapEl.appendChild(tag);
+    } catch (_) {}
+  }
+
   function installSelectionWatcher() {
     try { S.selObserver?.disconnect?.(); } catch (_) {}
     S.selObserver = null; if (S.selTimer) { clearTimeout(S.selTimer); S.selTimer = null; }
@@ -644,6 +658,7 @@
         S.wrapEl.className = 'fs-inline-wrap fs-inline-wrap--image';
         S.wrapEl.appendChild(img); S.imgEl = img;
         S.imageObjectUrl = objectUrl;
+        addFilenameBadge(url);
 
         let scale = 1, posX = 0, posY = 0, dragging = false, startX = 0, startY = 0;
         const apply = () => { img.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`; };
@@ -679,6 +694,7 @@
       el.setAttribute('playsinline', ''); el.setAttribute('controls', '');
       el.className = kind === 'audio' ? 'fs-inline-audio-player' : 'fs-inline-video-player';
       S.wrapEl.className = `fs-inline-wrap fs-inline-wrap--${kind === 'audio' ? 'audio' : 'video'}`;
+      if (kind === 'video') addFilenameBadge(url);
 
       if (kind === 'audio') {
         ensureAudioLayout(el, url);
@@ -1035,6 +1051,7 @@
       S.wrapEl.appendChild(holder);
     }
     S.videoEl = el;
+    if (kind === 'video') addFilenameBadge(url);
 
     const isHls = /\.m3u8(\?|$)/i.test(url);
     let hls = null;
@@ -1093,6 +1110,7 @@
       S.wrapEl.appendChild(holder);
     }
     S.videoEl = el;
+    if (kind === 'video') addFilenameBadge(url);
 
     installGlobalKeyHandlers({ kind });
 

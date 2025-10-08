@@ -28,7 +28,7 @@ function render(sites){
   if(!sites.length){
     const tr=document.createElement('tr');
     const td=document.createElement('td');
-    td.colSpan=3; td.innerHTML='<span class="muted">（空）可填 host 或 host:port，例如 nxuhe.com:7071 或 nxuhe.com</span>';
+    td.colSpan=3; td.innerHTML='<span class="muted">（空）可填 host 或 host:port，例如 example.com:5001 或 example.com</span>';
     tr.appendChild(td); tbody.appendChild(tr); return;
   }
   for(const item of sites){

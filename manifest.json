@@ -11,20 +11,12 @@
     "128": "icons/icon-128.png"
   },
 
-  "permissions": ["storage"],
+  "permissions": ["storage", "scripting"],
   "host_permissions": ["https://*/*", "http://*/*"],
 
-  "content_scripts": [{
-    "matches": ["https://*/*", "http://*/*"],
-    "css": ["lib/plyr.css", "lib/fs-preview.css"],
-    "js": [
-      "lib/plyr.polyfilled.min.js",
-      "lib/heic2any.min.js",
-      "lib/hls.min.js",
-      "content.js"
-    ],
-    "run_at": "document_start"
-  }],
+  "background": {
+    "service_worker": "background.js"
+  },
 
   "web_accessible_resources": [{
     "resources": ["page-hook.js"],
