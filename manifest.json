@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Synology File Station 预览（空格/ESC + 视频/音频/图片）",
+  "name": "Synology File Station 预览（空格/ESC + 视频/音频/图片/Markdown）",
   "version": "1.2.0",
-  "description": "在群晖 File Station 中：选中文件按空格浮层预览（视频/音频/图片），ESC 关闭；可按域名(含端口)开关生效。",
+  "description": "在群晖 File Station 中：选中文件按空格浮层预览（视频/音频/图片/Markdown），ESC 关闭；可按域名(含端口)开关生效。",
 
   "icons": {
     "16": "icons/icon.png",

@@ -43,8 +43,9 @@
     video: /\.(mp4|mkv|avi|mov|flv|wmv|ts|m4v|webm|mpg|mpeg|m3u8)$/i,
     audio: /\.(mp3|aac|m4a|oga|ogg|wav|flac)$/i,
     image: /\.(jpg|jpeg|png|gif|webp|bmp|svg|heic|heif)$/i,
+    text: /\.(md|markdown)$/i,
   };
-  const ANY_MEDIA = /\.(mp4|mkv|avi|mov|flv|wmv|ts|m4v|webm|mpg|mpeg|m3u8|mp3|aac|m4a|oga|ogg|wav|flac|jpg|jpeg|png|gif|webp|bmp|svg|heic|heif)$/i;
+  const ANY_MEDIA = /\.(mp4|mkv|avi|mov|flv|wmv|ts|m4v|webm|mpg|mpeg|m3u8|mp3|aac|m4a|oga|ogg|wav|flac|jpg|jpeg|png|gif|webp|bmp|svg|heic|heif|md|markdown)$/i;
   const HEIC_EXT = /\.(heic|heif)(\?|$)/i;
 
   /** ======================== 全局状态 ======================== **/
@@ -402,7 +403,7 @@
     mask.setAttribute('tabindex', '-1');
 
     const wrap = document.createElement('div');
-    const wrapType = size === 'image' ? 'image' : (size === 'audio' ? 'audio' : 'video');
+    const wrapType = size === 'image' ? 'image' : (size === 'audio' ? 'audio' : (size === 'text' ? 'text' : 'video'));
     wrap.className = `fs-inline-wrap fs-inline-wrap--${wrapType}`;
 
     const btn = document.createElement('button'); btn.textContent = '✕';
@@ -637,6 +638,49 @@
     try { S.wrapEl.innerHTML = ''; } catch (_) {}
     const removeLoading = showOverlayLoading('资源加载中…');
     try {
+      if (kind === 'text') {
+        S.wrapEl.className = 'fs-inline-wrap fs-inline-wrap--text';
+        const root = document.createElement('div');
+        root.className = 'fs-text-root fs-markdown';
+        let text = '';
+        try {
+          const res = await fetch(url, { credentials: 'include' });
+          if (!res.ok) throw new Error('fetch text failed');
+          text = await res.text();
+        } catch (_) {
+          showMessageOverlay('加载文本失败');
+          return;
+        }
+
+        let html = '';
+        const hasMarked = typeof window.marked !== 'undefined' && window.marked && typeof window.marked.parse === 'function';
+        const hasPurify = typeof window.DOMPurify !== 'undefined' && window.DOMPurify && typeof window.DOMPurify.sanitize === 'function';
+        const hasHljs = typeof window.hljs !== 'undefined' && window.hljs && typeof window.hljs.highlight === 'function';
+
+        if (hasMarked) {
+          try {
+            if (window.marked.setOptions) {
+              window.marked.setOptions({ gfm: true, breaks: true, headerIds: true, mangle: false });
+            }
+            const raw = window.marked.parse(text);
+            html = hasPurify ? window.DOMPurify.sanitize(raw) : raw;
+          } catch (_) {
+            html = renderMarkdown(text); // 回退
+          }
+        } else {
+          html = renderMarkdown(text); // 回退
+        }
+
+        root.innerHTML = html;
+        S.wrapEl.appendChild(root);
+        addFilenameBadge(url);
+        try { root.querySelectorAll('a[href]').forEach(a => { a.setAttribute('target', '_blank'); a.setAttribute('rel', 'noopener noreferrer'); }); } catch (_) {}
+        try { if (hasHljs && window.hljs.highlightAll) window.hljs.highlightAll(); } catch (_) {}
+        installGlobalKeyHandlers({ kind: 'text' });
+        schedulePreloadNext();
+        return;
+      }
+
       if (kind === 'image') {
         if (S.imageObjectUrl) { releaseImageObjectUrl(S.imageObjectUrl); S.imageObjectUrl = null; }
         const preImg = S.preloads.get(url);
@@ -746,6 +790,120 @@
   async function showImage(url) {
     buildOverlaySkeleton('image');
     await setOverlayContent(url, 'image');
+  }
+
+  /** ======================== 文本/Markdown 预览 ======================== **/
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+  function escapeAttr(s) {
+    return escapeHtml(s).replace(/`/g, '&#96;');
+  }
+  function applyInlineMd(s) {
+    // 基于已转义的文本进行行内替换
+    let out = escapeHtml(s);
+    // 行内代码
+    out = out.replace(/`([^`]+)`/g, (m, c) => `<code>${c}</code>`);
+    // 粗体、斜体
+    out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    out = out.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    out = out.replace(/_([^_]+)_/g, '<em>$1</em>');
+    // 图片
+    out = out.replace(/!\[([^\]]*)\]\(([^\s)]+)(?:\s+\"([^\"]*)\")?\)/g, (m, alt, src, title) => {
+      const a = escapeAttr(alt || '');
+      const s = escapeAttr(src || '#');
+      const ti = title ? ` title="${escapeAttr(title)}"` : '';
+      return `<img src="${s}" alt="${a}"${ti}>`;
+    });
+    // 链接
+    out = out.replace(/\[([^\]]+)\]\(([^\s)]+)(?:\s+\"([^\"]*)\")?\)/g, (m, txt, href, title) => {
+      const t = txt; // 已转义
+      const h = escapeAttr(href || '#');
+      const ti = title ? ` title="${escapeAttr(title)}"` : '';
+      return `<a href="${h}" target="_blank" rel="noopener noreferrer"${ti}>${t}</a>`;
+    });
+    return out;
+  }
+  function renderMarkdown(md) {
+    try {
+      const lines = String(md || '').replace(/\r\n?/g, '\n').split('\n');
+      let html = '';
+      let inCode = false; let codeLang = '';
+      let listOpen = false; let listType = null; // 'ul' | 'ol'
+      let bqOpen = false;
+
+      const closeList = () => { if (listOpen) { html += `</${listType}>`; listOpen = false; listType = null; } };
+      const closeBq = () => { if (bqOpen) { html += `</blockquote>`; bqOpen = false; } };
+
+      for (let i = 0; i < lines.length; i++) {
+        const raw = lines[i];
+        const line = raw;
+        const trimmed = line.trim();
+
+        // 代码块围栏
+        if (/^```/.test(trimmed)) {
+          if (!inCode) {
+            closeList(); closeBq();
+            inCode = true; codeLang = trimmed.slice(3).trim();
+            const cls = codeLang ? ` class="language-${escapeAttr(codeLang)}"` : '';
+            html += `<pre class="fs-code"><code${cls}>`;
+          } else {
+            inCode = false; codeLang = '';
+            html += `</code></pre>`;
+          }
+          continue;
+        }
+        if (inCode) { html += `${escapeHtml(line)}\n`; continue; }
+
+        // 水平线
+        if (/^\s*([*_\-]){3,}\s*$/.test(trimmed)) { closeList(); closeBq(); html += '<hr>'; continue; }
+
+        // 标题
+        const mh = line.match(/^(#{1,6})\s+(.*)$/);
+        if (mh) { closeList(); closeBq(); const lv = mh[1].length; html += `<h${lv}>${applyInlineMd(mh[2])}</h${lv}>`; continue; }
+
+        // 引用
+        if (/^\s*>\s?/.test(line)) {
+          closeList();
+          if (!bqOpen) { html += '<blockquote>'; bqOpen = true; }
+          html += `<p>${applyInlineMd(line.replace(/^\s*>\s?/, ''))}</p>`;
+          continue;
+        }
+
+        // 有序/无序列表
+        if (/^\s*\d+\.\s+/.test(line)) {
+          if (!listOpen || listType !== 'ol') { closeList(); closeBq(); html += '<ol>'; listOpen = true; listType = 'ol'; }
+          html += `<li>${applyInlineMd(line.replace(/^\s*\d+\.\s+/, ''))}</li>`; continue;
+        }
+        if (/^\s*[-+*]\s+/.test(line)) {
+          if (!listOpen || listType !== 'ul') { closeList(); closeBq(); html += '<ul>'; listOpen = true; listType = 'ul'; }
+          html += `<li>${applyInlineMd(line.replace(/^\s*[-+*]\s+/, ''))}</li>`; continue;
+        }
+
+        // 空行 -> 分段
+        if (trimmed === '') { closeList(); closeBq(); continue; }
+
+        // 普通段落
+        closeList(); closeBq();
+        html += `<p>${applyInlineMd(line)}</p>`;
+      }
+      if (inCode) html += `</code></pre>`;
+      if (listOpen) html += `</${listType}>`;
+      if (bqOpen) html += `</blockquote>`;
+      return html;
+    } catch (_) {
+      // 降级：纯文本
+      return `<pre class="fs-code">${escapeHtml(md || '')}</pre>`;
+    }
+  }
+  async function showText(url) {
+    buildOverlaySkeleton('text');
+    await setOverlayContent(url, 'text');
   }
 
   /** ======================== 音频元数据 & 布局 ======================== **/
@@ -1196,6 +1354,7 @@
     if (EXT.video.test(x)) return 'video';
     if (EXT.audio.test(x)) return 'audio';
     if (EXT.image.test(x)) return 'image';
+    if (EXT.text.test(x)) return 'text';
     return null;
   }
   async function openCurrentSelection(preferredCell) {
@@ -1216,6 +1375,7 @@
     if (!kind) { showMessageOverlay('暂不支持此格式预览'); return; }
     if (kind === 'image') await showImage(url);
     else if (kind === 'audio') await showPlyr(url, 'audio');
+    else if (kind === 'text') await showText(url);
     else await showPlyr(url, 'video');
   }
 

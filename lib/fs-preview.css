@@ -68,6 +68,15 @@
   justify-content: center;
 }
 
+/* 文本/Markdown 预览 */
+.fs-inline-wrap--text {
+  width: 86vw;
+  max-width: 1200px;
+  height: 86vh;
+  max-height: 900px;
+  background: #111;
+}
+
 .fs-inline-close {
   position: absolute;
   right: 6px;
@@ -278,3 +287,61 @@
 .fs-audio-player-holder audio {
   width: 100%;
 }
+
+/* 文本/Markdown 内容样式 */
+.fs-text-root {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  padding: 24px 28px;
+  color: #f5f5f5;
+  line-height: 1.65;
+}
+
+.fs-markdown h1, .fs-markdown h2, .fs-markdown h3,
+.fs-markdown h4, .fs-markdown h5, .fs-markdown h6 {
+  margin: 1.2em 0 0.6em;
+  line-height: 1.3;
+}
+.fs-markdown h1 { font-size: 1.8em; }
+.fs-markdown h2 { font-size: 1.6em; }
+.fs-markdown h3 { font-size: 1.35em; }
+.fs-markdown h4 { font-size: 1.2em; }
+.fs-markdown h5 { font-size: 1.1em; }
+.fs-markdown h6 { font-size: 1em; }
+
+.fs-markdown p { margin: 0.6em 0; }
+.fs-markdown a { color: #93c5fd; text-decoration: none; }
+.fs-markdown a:hover { text-decoration: underline; }
+
+.fs-markdown code {
+  background: #222;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.95em;
+}
+.fs-markdown pre.fs-code {
+  background: #0d0d0d;
+  padding: 12px 14px;
+  border-radius: 8px;
+  overflow: auto;
+  margin: 0.8em 0;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.fs-markdown pre.fs-code code { background: transparent; padding: 0; }
+
+.fs-markdown ul, .fs-markdown ol { margin: 0.6em 0 0.6em 1.4em; }
+.fs-markdown li { margin: 0.25em 0; }
+
+.fs-markdown blockquote {
+  margin: 0.8em 0;
+  padding: 8px 12px;
+  border-left: 3px solid #374151;
+  background: rgba(255,255,255,0.05);
+  border-radius: 4px;
+}
+
+.fs-markdown hr { border: none; border-top: 1px solid rgba(255,255,255,0.12); margin: 1em 0; }
+
+.fs-markdown img { max-width: 100%; height: auto; border-radius: 6px; }

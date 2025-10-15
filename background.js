@@ -7,9 +7,14 @@ const SCRIPT_ID = 'fs-preview-content';
 const contentResources = {
   css: [
     'lib/plyr.css',
+    'lib/hljs-github.min.css',
     'lib/fs-preview.css',
   ],
   js: [
+    // Markdown + 安全 + 代码高亮
+    'lib/marked.min.js',
+    'lib/purify.min.js',
+    'lib/highlight.min.js',
     'lib/plyr.polyfilled.min.js',
     'lib/heic2any.min.js',
     'lib/hls.min.js',
@@ -80,4 +85,3 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'local' || !changes[KEY]) return;
   refreshRegisteredContentScripts();
 });
-
